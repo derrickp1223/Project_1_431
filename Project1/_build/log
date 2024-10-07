@@ -1,0 +1,6 @@
+# dune init proj Project1
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Shared cache location: /Users/dp/.cache/dune/db
+# Workspace root: /Users/dp/CS431/Project1/Project1
+# Auto-detected concurrency: 8
