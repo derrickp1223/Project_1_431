@@ -1,6 +1,16 @@
-# dune init proj Project1
+# dune exec Project1
 # OCAMLPARAM: unset
 # Shared cache: disabled
-# Shared cache location: /Users/dp/.cache/dune/db
-# Workspace root: /Users/dp/CS431/Project1/Project1
-# Auto-detected concurrency: 8
+# Shared cache location: /home/vegapunk/.cache/dune/db
+# Workspace root: /home/vegapunk/CS431/Projects/Project_1_431/Project1
+# Auto-detected concurrency: 12
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /usr/bin/ocamlc.opt -config > /tmp/dune_185d13_output
