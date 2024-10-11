@@ -20,6 +20,11 @@ name = "To Do"
 [[processes]]
 id = "process2"
 name = "In Progress"
+tasks = [ ]
+
+[[processes]]
+id = "process3"
+name = "Done"
 
   [[processes.tasks]]
   id = "task2"
@@ -31,8 +36,3 @@ name = "In Progress"
   checkList = [ ]
   priority = ""
   linkCommits = [ ]
-
-[[processes]]
-id = "process3"
-name = "Done"
-tasks = [ ]
