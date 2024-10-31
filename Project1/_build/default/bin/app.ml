@@ -1,10 +1,26 @@
 let () = print_endline "Hello, World!"
 
-let testList = ["lions"; "tiger"; "bears"]
+let testList = ["lions"; "tiger"; "bears";"wasps";"crabs";"snake";"rhino"]
 
-let rec getElement list index =
-  match list with
-  | [] -> None
-  | hd :: tl -> if index = 0 then Some hd else getElement tl (index - 1)
+let getRandElement list =
+  let randIndex = Random.int (List.length list) in
+  List.nth list randIndex
 ;;
-getElement testList 0;;
+
+print_endline (getRandElement testList);;
+
+open Bogue
+module W = Widget
+module L = Layout
+
+let main () =
+
+  let b = W.check_box () in
+  let l = W.label "Hello world" in
+  let layout = L.flat_of_w [b;l] in
+
+  let board = Bogue.of_layout layout in
+  Bogue.run board;;
+
+let () = main ();
+  Bogue.quit ()
