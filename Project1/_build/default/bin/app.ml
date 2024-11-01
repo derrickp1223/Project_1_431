@@ -12,21 +12,30 @@ open Bogue
 module W = Widget
 module L = Layout
 
-let makeBox color text =
-  L.resident ~w:50 ~h:50 ~background:(L.color_bg Draw.(opaque(find_color color))) 
-  (W.label text ~fg: Draw.(opaque(find_color "white")))
+let makeBoxWidgit color = 
+  W.box ~w:50 ~h:50 ~style:Style.(of_bg (opaque_bg (Draw.find_color color)))
+let makeBoxLayout color text =
+  L.superpose ~w:50 ~h:50 
+  [
+    L.resident (W.label text ~fg: Draw.(opaque(find_color "white")));
+    L.resident ((makeBoxWidgit color) ()) 
+  ]
 
-let firstRowOfBoxes = [makeBox "grey" "";makeBox "grey" "";makeBox "grey" "";makeBox "grey" "";makeBox "grey" "";]
+  let makeRow colorList charList =
+    L.flat ~scale_content:false ~align:Center (List.map2 (fun color char -> makeBoxLayout color char) colorList charList)
 
-let rowOfBoxes name list = 
-  L.flat ~name:name ~scale_content:false ~align:Center list
+  let row1 = 
+    makeRow ["green"; "yellow"; "grey"; "green"; "grey"] [""; ""; ""; ""; ""]
 
-let rowsOfRows = 
-  L.tower [rowOfBoxes "firstRow" firstRowOfBoxes;]
+  let row2 =
+    makeRow ["green"; "grey"; "grey"; "green"; "yellow"] [""; ""; ""; ""; ""]
+
 
 let main () =
-  let main_layout = L.tower ~name:"Not Wordle" ~align:Max ~background:(L.color_bg Draw.(opaque(find_color "dark_grey"))) [rowsOfRows] in
-    Bogue.(run(of_layout main_layout))
+
+  let main_layout = L.tower ~name:"Not Wordle" ~align:Center ~background:(L.color_bg Draw.(opaque(find_color "dark_grey"))) [row1;row2;] in
+  
+  Bogue.(run(of_layout main_layout))
 
 let () = main ();
   Bogue.quit()
