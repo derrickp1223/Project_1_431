@@ -20,12 +20,33 @@ let makeBoxLayout color text =
     L.resident ((makeBoxWidgit color) ());
     L.resident (W.label text ~size:48 ~fg: Draw.(opaque(251,251,251)));
   ]
+
+
+let rec getWidgetsFromLayout layout =
+  match L.get_content layout with
+  | Resident widget -> [widget]
+  | Rooms rooms -> List.flatten (List.map getWidgetsFromLayout rooms)
+
+(* Function to extract text from widgets *)
+
+
 (* Colors 
 let green = (1,154,1)
 let yellow = (255,196,37)
 *)
 
 let grey = (128,128,128)
+
+let makeRow colorList charList =
+  L.flat ~scale_content:false ~align:Center (List.map2 (fun color char -> makeBoxLayout color char) colorList charList) 
+
+let testRow = makeRow [(1,154,1);(255,196,37);(1,154,1);(255,196,37);(1,154,1)] ["A"; "S"; "D"; "F"; "G"]
+
+let getTextStringsFromWidgets widgets =
+  List.filter_map (fun w -> Some (W.get_text w)) widgets
+
+let stringsFromTestRow = getTextStringsFromWidgets (getWidgetsFromLayout testRow)
+
 
 (* Global list reference to store the text *)
 let keysPressed = ref []
@@ -64,7 +85,8 @@ let clickKeyboard =
       )
 
 let main () =
-  let displayLayout = L.superpose ~background:(L.color_bg Draw.(opaque(find_color "grey"))) ~w:290 ~h:70 [] in
+  print_endline (String.concat ", " stringsFromTestRow);
+  let displayLayout = L.superpose ~w:290 ~h:70 ~background:(L.color_bg Draw.(opaque(find_color "grey"))) [] in
   let finalLayout = L.tower ~scale_content:false ~name:"Not Wordle" ~align:Center ~background:(L.color_bg Draw.(opaque(find_color "dark_grey"))) [displayLayout;clickKeyboard] in
   let before_display () =
     Some ()
