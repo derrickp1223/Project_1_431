@@ -1,4 +1,4 @@
 (executable
  (public_name Project1)
  (name app)
- (libraries Project1))
+ (libraries Project1 bogue))
