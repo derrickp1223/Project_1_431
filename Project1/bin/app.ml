@@ -1,12 +1,36 @@
 
-let testList = ["lions"; "tiger"; "bears";"wasps";"crabs";"snake";"rhino"]
+let testList = ["lions"; "tiger"; "BEARS";"wasps";"crabs";"snake";"rhino"]
 
 let getRandElement list =
   let randIndex = Random.int (List.length list) in
   List.nth list randIndex
 ;;
 
-print_endline (getRandElement testList);;
+(* Selects a string from our list and converts it to a list of characters *)
+let stringToCharList str =
+  List.init (String.length str) (fun i -> str.[i])
+;;
+
+(* Turns our string list to a char list to compare them *)
+let stringListToCharList list =
+  List.concat (List.map (fun str -> List.of_seq (String.to_seq str)) list)
+;;
+
+(* Test answer *)
+let testAnswer = stringToCharList (getRandElement testList);;
+
+(* Prints a list of characters*)
+let printCharList list =
+  List.iter (fun c -> Printf.printf "%c " c) list;
+  print_endline ("");
+;;
+printCharList testAnswer;;
+
+(* Prints our string of bools *)
+let stringOfBoolList lst =
+  String.concat "" (List.map (fun b -> if b then "T" else "F") lst)
+;;
+
 
 open Bogue
 module W = Widget
@@ -30,10 +54,10 @@ let makeBoxLayout color text =
 (* Function to extract text from widgets *)
 
 
-(* Colors 
+
 let green = (1,154,1)
 let yellow = (255,196,37)
-*)
+
 
 let grey = (128,128,128)
 
@@ -47,6 +71,7 @@ let getPressedButton () =
   let b = !pressedButton
   in pressedButton := None;
   b
+let lettersCorrect = ref [] 
 
   let makeButton text =
     W.button text ~action:(fun _ -> 
@@ -64,7 +89,9 @@ let clickKeyboard =
     |> Option.iter (fun x -> 
         if x = "Back" then (
           if List.length !keysPressed > 0 then (
+            (* Removes last character form list *)
             keysPressed := List.rev (List.tl (List.rev !keysPressed));
+            (* Prints our keysPressed list *)
             print_endline (String.concat ", " !keysPressed);
             let widgets = getWidgetsWithText layout in
             List.iteri (fun i w -> 
@@ -75,17 +102,53 @@ let clickKeyboard =
             ) widgets;
           )
         ) else if List.length !keysPressed < 5 then (
-          keysPressed := !keysPressed @ [x];
-          print_endline (String.concat ", " !keysPressed);
-          let widgets = getWidgetsWithText layout in
-          List.iteri (fun i w -> 
-            if i < List.length !keysPressed then
-              W.set_text w (List.nth !keysPressed i)
-            else
-              W.set_text w " "
+            (* Adds character entered to list *)
+            keysPressed := !keysPressed @ [x];
+            (* Prints our keysPressed list *)
+            print_endline (String.concat ", " !keysPressed);
+            let widgets = getWidgetsWithText layout in
+            List.iteri (fun i w -> 
+              if i < List.length !keysPressed then
+                W.set_text w (List.nth !keysPressed i)
+              else
+                W.set_text w " "
           ) widgets;
-        )
+        ) else if x = "Enter" && List.length !keysPressed = 5 then (
+            (* If the entered string matches are answer returns correct! *)
+            if stringListToCharList !keysPressed = testAnswer then 
+              print_endline ("Correct")
+            (* Else compares each letter and returns true or false for each*)
+            else 
+              print_endline ("Wrong");
+              let comList = stringListToCharList !keysPressed in
+              List.iteri (fun i _ ->
+                if i < List.length comList then 
+                  if List.nth comList i = List.nth testAnswer i then
+                    lettersCorrect := true :: !lettersCorrect
+                  else 
+                    lettersCorrect := false :: !lettersCorrect
+              ) comList;
+              print_endline (stringOfBoolList !lettersCorrect);
+            (* Updates square colors if true or false *)
+            let widgets = getWidgetsWithText layout in
+            List.iteri (fun i w -> 
+              if i < List.length !lettersCorrect then
+                if List.nth !lettersCorrect i = true
+                  W.color_bg w green
+            ) widgets;
+            lettersCorrect := []; (* Reset letters correct *)
+            (* Prints our keysPressed list *)
+            print_endline (String.concat ", " !keysPressed);
+            let widgets = getWidgetsWithText layout in
+            List.iteri (fun i w -> 
+              if i < List.length !keysPressed then
+                W.set_text w (List.nth !keysPressed i)
+              else
+              W.set_text w " "
+            ) widgets;
+        ) 
       )
+
 
 let main () =
   let displayLayout = L.superpose ~w:290 ~h:70 ~background:(L.color_bg Draw.(opaque(find_color "grey"))) [makeRow [grey;grey;grey;grey;grey] [" ";" ";" ";" ";" "]] in
