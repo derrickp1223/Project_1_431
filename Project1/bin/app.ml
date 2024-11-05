@@ -26,10 +26,6 @@ let printCharList list =
 ;;
 printCharList testAnswer;;
 
-(* Prints our string of bools *)
-let stringOfBoolList lst =
-  String.concat "" (List.map (fun b -> if b then "T" else "F") lst)
-;;
 
 
 open Bogue
@@ -53,10 +49,9 @@ let makeBoxLayout color text =
 
 (* Function to extract text from widgets *)
 
-
-
+(*
 let green = (1,154,1)
-let yellow = (255,196,37)
+let yellow = (255,196,37)*)
 
 
 let grey = (128,128,128)
@@ -124,19 +119,25 @@ let clickKeyboard =
               List.iteri (fun i _ ->
                 if i < List.length comList then 
                   if List.nth comList i = List.nth testAnswer i then
-                    lettersCorrect := true :: !lettersCorrect
+                    lettersCorrect := !lettersCorrect @ ['t']
+                  else if List.mem (List.nth comList i) testAnswer then
+                    lettersCorrect := !lettersCorrect @ ['i']
                   else 
-                    lettersCorrect := false :: !lettersCorrect
+                    lettersCorrect := !lettersCorrect @ ['f']
               ) comList;
-              print_endline (stringOfBoolList !lettersCorrect);
-            (* Updates square colors if true or false *)
+              printCharList !lettersCorrect;
+
+            (* Updates square colors to green if true or yellow TODO*)
             let widgets = getWidgetsWithText layout in
             List.iteri (fun i w -> 
               if i < List.length !lettersCorrect then
-                if List.nth !lettersCorrect i = true
-                  W.color_bg w green
+                if List.nth !lettersCorrect i = ['t'] then
+                  (*set color green*)
+                else if List.nth !lettersCorrect i = ['i'] then
+                  (*set color yellow*)
             ) widgets;
             lettersCorrect := []; (* Reset letters correct *)
+
             (* Prints our keysPressed list *)
             print_endline (String.concat ", " !keysPressed);
             let widgets = getWidgetsWithText layout in
