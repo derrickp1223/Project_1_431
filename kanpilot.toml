@@ -7,9 +7,20 @@ id = "process1"
 name = "To Do"
 
   [[processes.tasks]]
-  id = "task1"
-  title = "Find a list of 5 letter words"
+  id = "mzo8aocvnojf02r04c8aviv7"
+  title = "Change the colors of the boxes to give hints when user clicks enter"
   description = "<p></p>"
+  tag = "backlog"
+  linkFiles = [ ]
+  dueDate = ""
+  checkList = [ ]
+  priority = ""
+  linkCommits = [ ]
+
+  [[processes.tasks]]
+  id = "zwno41ypqwoyxy9m27i09ef6"
+  title = "Let the user enter 6 guesses"
+  description = ""
   tag = "backlog"
   linkFiles = [ ]
   dueDate = ""
@@ -20,15 +31,47 @@ name = "To Do"
 [[processes]]
 id = "process2"
 name = "In Progress"
-tasks = [ ]
+
+  [[processes.tasks]]
+  id = "b6br40icoe5nll0mhqlgzdbk"
+  title = "Create a list in Ocaml with the text file of 5 letter words"
+  description = ""
+  tag = "backlog"
+  linkFiles = [ ]
+  dueDate = ""
+  checkList = [ ]
+  priority = ""
+  linkCommits = [ ]
 
 [[processes]]
 id = "process3"
 name = "Done"
 
   [[processes.tasks]]
+  id = "qgxgfg9uistbj9s3nzxrtdlg"
+  title = "Create a keyboard that modified the strings in a row of boxes"
+  description = ""
+  tag = "backlog"
+  linkFiles = [ ]
+  dueDate = ""
+  checkList = [ ]
+  priority = ""
+  linkCommits = [ ]
+
+  [[processes.tasks]]
   id = "task2"
-  title = "A function to select a random element from a string list"
+  title = "Create function to select a random element from a string list"
+  description = "<p></p>"
+  tag = "backlog"
+  linkFiles = [ ]
+  dueDate = ""
+  checkList = [ ]
+  priority = ""
+  linkCommits = [ ]
+
+  [[processes.tasks]]
+  id = "task1"
+  title = "Find a list of 5 letter words"
   description = "<p></p>"
   tag = "backlog"
   linkFiles = [ ]
