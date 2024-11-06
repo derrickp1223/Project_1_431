@@ -63,32 +63,37 @@ open Bogue
 module W = Widget
 module L = Layout
 
-let makeBoxWidgit color = 
-  W.box ~w:50 ~h:50 ~style:Style.(of_bg (opaque_bg (color)))
-let makeBoxLayout color text =
+let makeBoxLayout color = 
+  L.resident ~w:50 ~h:50 (W.box ~style:Style.(of_bg (opaque_bg (color))) ())
+let createBoxAndLabel color text =
   L.superpose ~w:50 ~h:50 ~center:true 
   [
-    L.resident ~w:50 ((makeBoxWidgit color) ());
+    makeBoxLayout color;
     L.resident ~w:50 (W.label text ~size:48 ~fg: Draw.(opaque(251,251,251)));
   ]
 
-(* Function to extract W.labels from a layout *)
-  let rec getWidgetsWithText layout =
-    match L.get_content layout with
-    | Resident widget -> if W.get_text widget <> "" then [widget] else []
-    | Rooms rooms -> List.flatten (List.map getWidgetsWithText rooms)
 
+(* Function to extract W.labels from a layout *)
+let rec getWidgetsWithText layout =
+  match L.get_content layout with
+  | Resident widget -> if W.get_text widget <> "" then [widget] else []
+  | Rooms rooms -> List.flatten (List.map getWidgetsWithText rooms)
+  (* Function to extract widgets without text from a layout *)
+let rec getWidgetsWithoutText layout =
+  match L.get_content layout with
+  | Resident widget -> if W.get_text widget = "" then [widget] else []
+  | Rooms rooms -> List.flatten (List.map getWidgetsWithoutText rooms)
+
+    
 (* Function to extract text from widgets *)
 
-(*
+
 let green = (1,154,1)
-let yellow = (255,196,37)*)
-
-
+let yellow = (255,196,37)
 let grey = (128,128,128)
 
 let makeRow colorList charList =
-  L.flat ~scale_content:false ~align:Center (List.map2 (fun color char -> makeBoxLayout color char) colorList charList) 
+  L.flat ~scale_content:false ~align:Center (List.map2 (fun color char -> createBoxAndLabel color char) colorList charList) 
 
 (* Global list reference to store the text *)
 let keysPressed = ref []
@@ -99,10 +104,10 @@ let getPressedButton () =
   b
 let lettersCorrect = ref [] 
 
-  let makeButton text =
-    W.button text ~action:(fun _ -> 
-      pressedButton := Some text;
-    )
+let makeButton text =
+  W.button text ~action:(fun _ -> 
+    pressedButton := Some text;
+  )
 
 let clickKeyboard = 
   let firstRow = L.flat ~align:Center ~scale_content:true (List.map (fun b -> L.resident (makeButton b)) ["Q"; "W"; "E"; "R"; "T"; "Y"; "U"; "I"; "O"; "P";"Back"]) in
@@ -110,69 +115,83 @@ let clickKeyboard =
   let thirdRow = L.flat ~align:Center ~scale_content:true (List.map (fun b -> L.resident (makeButton b)) ["Z"; "X"; "C"; "V"; "B"; "N"; "M"]) in  
   L.tower ~align:Center ~background:(L.color_bg Draw.(opaque(find_color "dark_grey"))) [firstRow;secondRow;thirdRow]
 
-  let updateText layout =
-    getPressedButton ()
-    |> Option.iter (fun x -> 
-        if x = "Back" then (
-          if List.length !keysPressed > 0 then (
-            (* Removes last character form list *)
-            keysPressed := List.rev (List.tl (List.rev !keysPressed));
-            (* Prints our keysPressed list *)
-            print_endline (String.concat ", " !keysPressed);
-            let widgets = getWidgetsWithText layout in
-            List.iteri (fun i w -> 
-              if i < List.length !keysPressed then
-                W.set_text w (List.nth !keysPressed i)
-              else
-                W.set_text w " "
-            ) widgets;
-          )
-        ) else if List.length !keysPressed < 5 then (
-            (* Adds character entered to list *)
-            keysPressed := !keysPressed @ [x];
-            (* Prints our keysPressed list *)
-            print_endline (String.concat ", " !keysPressed);
-            let widgets = getWidgetsWithText layout in
-            List.iteri (fun i w -> 
-              if i < List.length !keysPressed then
-                W.set_text w (List.nth !keysPressed i)
-              else
-                W.set_text w " "
-          ) widgets;
-        ) else if x = "Enter" && List.length !keysPressed = 5 then (
-            (* If the entered string matches are answer returns correct! *)
-            if stringListToCharList !keysPressed = answer then 
-              print_endline ("Correct")
-            (* Else compares each letter and returns true or false for each*)
-            else 
-              print_endline ("Wrong");
-              let comList = stringListToCharList !keysPressed in
-              List.iteri (fun i _ ->
-                if i < List.length comList then 
-                  if List.nth comList i = List.nth answer i then
-                    lettersCorrect := !lettersCorrect @ ['t']
-                  else if List.mem (List.nth comList i) answer then
-                    lettersCorrect := !lettersCorrect @ ['i']
-                  else 
-                    lettersCorrect := !lettersCorrect @ ['f']
-              ) comList;
-              printCharList !lettersCorrect;
-
-            (* Updates square colors to green if true or yellow TODO*)
-            
-            lettersCorrect := []; (* Reset letters correct *)
-
-            (* Prints our keysPressed list *)
-            print_endline (String.concat ", " !keysPressed);
-            let widgets = getWidgetsWithText layout in
-            List.iteri (fun i w -> 
-              if i < List.length !keysPressed then
-                W.set_text w (List.nth !keysPressed i)
-              else
+let updateText layout =
+  getPressedButton ()
+  |> Option.iter (fun x -> 
+      if x = "Back" then (
+        if List.length !keysPressed > 0 then (
+          (* Removes last character from list *)
+          keysPressed := List.rev (List.tl (List.rev !keysPressed));
+          (* Prints our keysPressed list *)
+          print_endline (String.concat ", " !keysPressed);
+          let widgets = getWidgetsWithText layout in
+          List.iteri (fun i w -> 
+            if i < List.length !keysPressed then
+              W.set_text w (List.nth !keysPressed i)
+            else
               W.set_text w " "
-            ) widgets;
-        ) 
-      )
+          ) widgets;
+        )
+      ) else if List.length !keysPressed < 5 && x <> "Enter" then (
+          (* Adds character entered to list *)
+          keysPressed := !keysPressed @ [x];
+          (* Prints our keysPressed list *)
+          print_endline (String.concat ", " !keysPressed);
+          let widgets = getWidgetsWithText layout in
+          List.iteri (fun i w -> 
+            if i < List.length !keysPressed then
+              W.set_text w (List.nth !keysPressed i)
+            else
+              W.set_text w " "
+        ) widgets;
+      ) else if x = "Enter" && List.length !keysPressed = 5 then (
+          (* If the entered string matches our answer returns correct! *)
+          if stringListToCharList !keysPressed = testAnswer then 
+            print_endline ("Correct")
+          (* Else compares each letter and returns true or false for each*)
+          else 
+            print_endline ("Wrong");
+            let comList = stringListToCharList !keysPressed in
+            List.iteri (fun i _ ->
+              if i < List.length comList then 
+                if List.nth comList i = List.nth answer i then
+                  lettersCorrect := !lettersCorrect @ ['t']
+                else if List.mem (List.nth comList i) answer then
+                  lettersCorrect := !lettersCorrect @ ['i']
+                else 
+                  lettersCorrect := !lettersCorrect @ ['f']
+            ) comList;
+            printCharList !lettersCorrect;
+
+          
+          (* Updates square colors to green if true or yellow TODO*)
+          let box_widgets = getWidgetsWithoutText layout in
+          List.iteri (fun i _ -> 
+            if i < List.length !lettersCorrect then
+              if List.nth !lettersCorrect i = 't' then
+                (*set color green*)
+                  Box.set_style (W.get_box (List.nth box_widgets i)) Style.(of_bg (opaque_bg (green)))
+              else if List.nth !lettersCorrect i = 'i' then
+                (*set color yellow*)
+                  Box.set_style (W.get_box (List.nth box_widgets i)) Style.(of_bg (opaque_bg (yellow)))
+              else if List.nth !lettersCorrect i = 'f' then
+                (*set color dark_grey*)
+                  Box.set_style (W.get_box (List.nth box_widgets i)) Style.(of_bg (opaque_bg (Draw.find_color "dark_grey")))
+          ) box_widgets;
+          lettersCorrect := []; (* Reset letters correct *)
+          
+
+          (* Prints our keysPressed list *)
+          print_endline (String.concat ", " !keysPressed);
+          let widgets = getWidgetsWithText layout in
+          List.iteri (fun i w -> 
+            if i < List.length !keysPressed then
+              W.set_text w (List.nth !keysPressed i)
+            else
+            W.set_text w " "
+          ) widgets;
+      ) 
+    )
 
 
 let main () =
