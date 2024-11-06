@@ -1,6 +1,4 @@
 
-let testList = ["LIONS"; "TIGER"; "BEARS";"WASPS";"CRABS";"SNAKE";"RHINO"]
-
 let getRandElement list =
   Random.self_init ();  (* Initializes the random generator with a new seed *)
   let randIndex = Random.int (List.length list) in
@@ -45,7 +43,6 @@ let charListToUppercase list =
 ;;
 
 (* Test answer *)
-let testAnswer = stringToCharList (getRandElement testList);;
 let answer = charListToUppercase (stringToCharList (getRandomStringFile "words"));;
 
 (* Prints a list of characters*)
@@ -54,10 +51,7 @@ let printCharList list =
   print_endline ("");
 ;;
 
-printCharList testAnswer;;
 printCharList answer;;
-
-
 
 open Bogue
 module W = Widget
@@ -101,7 +95,11 @@ let keysPressed = ref []
 (* Global int reference for # of tries *)
 let currentTry = ref 0
 
+(* Global reference to remove functionality from back *)
 let gameOver = ref false
+
+(* Global reference to store the state of letters *)
+let letterStates = ref [] 
 
 (* Global reference to store the button pressed *)
 
@@ -110,7 +108,7 @@ let getPressedButton () =
   let b = !pressedButton
   in pressedButton := None;
   b
-let lettersCorrect = ref [] 
+
 
 let makeButton text =
   W.button text ~action:(fun _ -> 
@@ -131,8 +129,6 @@ let updateText layoutList index =
         if List.length !keysPressed > 0 then (
           (* Removes last character from list *)
           keysPressed := List.rev (List.tl (List.rev !keysPressed));
-          (* Prints our keysPressed list *)
-          print_endline (String.concat ", " !keysPressed);
           let widgets = getWidgetsWithText layout in
           List.iteri (fun i w -> 
             if i < List.length !keysPressed then
@@ -141,11 +137,9 @@ let updateText layoutList index =
               W.set_text w " "
           ) widgets;
         )
-      ) else if List.length !keysPressed < 5 && x <> "Enter" then (
+      ) else if List.length !keysPressed < 5 && x <> "Enter" && !gameOver == false then (
           (* Adds character entered to list *)
           keysPressed := !keysPressed @ [x];
-          (* Prints our keysPressed list *)
-          print_endline (String.concat ", " !keysPressed);
           let widgets = getWidgetsWithText layout in
           List.iteri (fun i w -> 
             if i < List.length !keysPressed then
@@ -155,42 +149,43 @@ let updateText layoutList index =
         ) widgets;
       ) else if x = "Enter" && List.length !keysPressed = 5 then (
         (* If the entered string matches our answer returns correct! *)
-        if stringListToCharList !keysPressed = testAnswer then 
-          print_endline ("Correct")
-        (* Else compares each letter and returns true or false for each*)
+        if stringListToCharList !keysPressed = answer then (
+          print_endline ("Correct");
+          gameOver := true;
+        )
+        (* Else prints "Wrong" in the terminal *)
         else 
           print_endline ("Wrong");
-          let comList = stringListToCharList !keysPressed in
-          List.iteri (fun i _ ->
-            if i < List.length comList then 
-              if List.nth comList i = List.nth answer i then
-                lettersCorrect := !lettersCorrect @ ['t']
-              else if List.mem (List.nth comList i) answer then
-                lettersCorrect := !lettersCorrect @ ['i']
-              else 
-                lettersCorrect := !lettersCorrect @ ['f']
-          ) comList;
-          printCharList !lettersCorrect;
 
+        (* The next two sections of code can be combined into one *)
+
+        (* Compares the entered string with the answer *)
+        let comList = stringListToCharList !keysPressed in
+        List.iteri (fun i _ ->
+          if i < List.length comList then 
+            if List.nth comList i = List.nth answer i then
+              letterStates := !letterStates @ ['g']
+            else if List.mem (List.nth comList i) answer then
+              letterStates := !letterStates @ ['y']
+            else 
+              letterStates := !letterStates @ ['f']
+        ) comList;
         
-        (* Updates square colors to green if true or yellow TODO*)
         let box_widgets = getWidgetsWithoutText layout in
         List.iteri (fun i _ -> 
-          if i < List.length !lettersCorrect then
-            if List.nth !lettersCorrect i = 't' then
+          if i < List.length !letterStates then
+            if List.nth !letterStates i = 'g' then
               (*set color green*)
                 Box.set_style (W.get_box (List.nth box_widgets i)) Style.(of_bg (opaque_bg (green)))
-            else if List.nth !lettersCorrect i = 'i' then
+            else if List.nth !letterStates i = 'y' then
               (*set color yellow*)
                 Box.set_style (W.get_box (List.nth box_widgets i)) Style.(of_bg (opaque_bg (yellow)))
-            else if List.nth !lettersCorrect i = 'f' then
+            else if List.nth !letterStates i = 'f' then
               (*set color dark_grey*)
                 Box.set_style (W.get_box (List.nth box_widgets i)) Style.(of_bg (opaque_bg (Draw.find_color "dark_grey")))
         ) box_widgets;
-        lettersCorrect := []; (* Reset letters correct *)
+        letterStates := []; (* Reset letters correct *)
         
-        (* Prints our keysPressed list *)
-        print_endline (String.concat ", " !keysPressed);
         let widgets = getWidgetsWithText layout in
         List.iteri (fun i w -> 
           if i < List.length !keysPressed then
