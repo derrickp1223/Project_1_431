@@ -73,10 +73,10 @@ let getPressedButton () =
   b
 let lettersCorrect = ref [] 
 
-  let makeButton text =
-    W.button text ~action:(fun _ -> 
-      pressedButton := Some text;
-    )
+let makeButton text =
+  W.button text ~action:(fun _ -> 
+    pressedButton := Some text;
+  )
 
 let clickKeyboard = 
   let firstRow = L.flat ~align:Center ~scale_content:true (List.map (fun b -> L.resident (makeButton b)) ["Q"; "W"; "E"; "R"; "T"; "Y"; "U"; "I"; "O"; "P";"Back"]) in
@@ -89,7 +89,7 @@ let updateText layout =
   |> Option.iter (fun x -> 
       if x = "Back" then (
         if List.length !keysPressed > 0 then (
-          (* Removes last character form list *)
+          (* Removes last character from list *)
           keysPressed := List.rev (List.tl (List.rev !keysPressed));
           (* Prints our keysPressed list *)
           print_endline (String.concat ", " !keysPressed);
@@ -101,7 +101,7 @@ let updateText layout =
               W.set_text w " "
           ) widgets;
         )
-      ) else if List.length !keysPressed < 5 then (
+      ) else if List.length !keysPressed < 5 && x <> "Enter" then (
           (* Adds character entered to list *)
           keysPressed := !keysPressed @ [x];
           (* Prints our keysPressed list *)
@@ -114,7 +114,7 @@ let updateText layout =
               W.set_text w " "
         ) widgets;
       ) else if x = "Enter" && List.length !keysPressed = 5 then (
-          (* If the entered string matches are answer returns correct! *)
+          (* If the entered string matches our answer returns correct! *)
           if stringListToCharList !keysPressed = testAnswer then 
             print_endline ("Correct")
           (* Else compares each letter and returns true or false for each*)
@@ -143,6 +143,9 @@ let updateText layout =
               else if List.nth !lettersCorrect i = 'i' then
                 (*set color yellow*)
                   Box.set_style (W.get_box (List.nth box_widgets i)) Style.(of_bg (opaque_bg (yellow)))
+              else if List.nth !lettersCorrect i = 'f' then
+                (*set color dark_grey*)
+                  Box.set_style (W.get_box (List.nth box_widgets i)) Style.(of_bg (opaque_bg (Draw.find_color "dark_grey")))
           ) box_widgets;
           lettersCorrect := []; (* Reset letters correct *)
           
