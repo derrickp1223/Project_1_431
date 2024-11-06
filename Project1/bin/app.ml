@@ -1,10 +1,31 @@
 
-let testList = ["lions"; "tiger"; "BEARS";"wasps";"crabs";"snake";"rhino"]
+let testList = ["LIONS"; "TIGER"; "BEARS";"WASPS";"CRABS";"SNAKE";"RHINO"]
 
 let getRandElement list =
+  Random.self_init ();  (* Initializes the random generator with a new seed *)
   let randIndex = Random.int (List.length list) in
   List.nth list randIndex
 ;;
+
+(* Read lines from file*)
+let readLinesFromFile filename =
+  let lines = ref [] in
+  let chan = open_in filename in
+  try
+    while true; do
+      lines := input_line chan :: !lines
+    done; !lines
+  with End_of_file ->
+    close_in chan;
+    List.rev !lines ;;
+;;
+
+(* Picks a random line from the file *)
+let getRandomStringFile filename =
+  let lines = readLinesFromFile filename in
+    getRandElement lines
+;;
+
 
 (* Selects a string from our list and converts it to a list of characters *)
 let stringToCharList str =
@@ -16,15 +37,25 @@ let stringListToCharList list =
   List.concat (List.map (fun str -> List.of_seq (String.to_seq str)) list)
 ;;
 
+(* Make the char list uppercase to match our input *)
+let charListToUppercase list =
+  let str = String.of_seq (List.to_seq list) in   (* Convert char list to string *)
+  let upper_str = String.uppercase_ascii str in         (* Convert string to uppercase *)
+  List.of_seq (String.to_seq upper_str) 
+;;
+
 (* Test answer *)
 let testAnswer = stringToCharList (getRandElement testList);;
+let answer = charListToUppercase (stringToCharList (getRandomStringFile "words"));;
 
 (* Prints a list of characters*)
 let printCharList list =
   List.iter (fun c -> Printf.printf "%c " c) list;
   print_endline ("");
 ;;
+
 printCharList testAnswer;;
+printCharList answer;;
 
 
 
@@ -110,7 +141,7 @@ let clickKeyboard =
           ) widgets;
         ) else if x = "Enter" && List.length !keysPressed = 5 then (
             (* If the entered string matches are answer returns correct! *)
-            if stringListToCharList !keysPressed = testAnswer then 
+            if stringListToCharList !keysPressed = answer then 
               print_endline ("Correct")
             (* Else compares each letter and returns true or false for each*)
             else 
@@ -118,9 +149,9 @@ let clickKeyboard =
               let comList = stringListToCharList !keysPressed in
               List.iteri (fun i _ ->
                 if i < List.length comList then 
-                  if List.nth comList i = List.nth testAnswer i then
+                  if List.nth comList i = List.nth answer i then
                     lettersCorrect := !lettersCorrect @ ['t']
-                  else if List.mem (List.nth comList i) testAnswer then
+                  else if List.mem (List.nth comList i) answer then
                     lettersCorrect := !lettersCorrect @ ['i']
                   else 
                     lettersCorrect := !lettersCorrect @ ['f']
@@ -128,14 +159,7 @@ let clickKeyboard =
               printCharList !lettersCorrect;
 
             (* Updates square colors to green if true or yellow TODO*)
-            let widgets = getWidgetsWithText layout in
-            List.iteri (fun i w -> 
-              if i < List.length !lettersCorrect then
-                if List.nth !lettersCorrect i = ['t'] then
-                  (*set color green*)
-                else if List.nth !lettersCorrect i = ['i'] then
-                  (*set color yellow*)
-            ) widgets;
+            
             lettersCorrect := []; (* Reset letters correct *)
 
             (* Prints our keysPressed list *)
